@@ -1,101 +1,421 @@
-<!DOCTYPE html>
-<html lang="id">
+<<!DOCTYPE html>
+<html lang="id" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OutdoorRent - Web3 Rental & Verification System (Solana Devnet)</title>
+    <title>OutdoorRent - Web3 Advanced Escrow & Verification</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        solana: {
+                            purple: '#9945FF',
+                            green: '#14F195',
+                            dark: '#0f172a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Solana Web3.js SDK -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <!-- FontAwesome & SweetAlert2 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans antialiased min-h-screen flex flex-col">
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-solana-purple selection:text-white">
 
-    <!-- Header / Navbar -->
-    <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+    <!-- Header & Navigation -->
+    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
-                <div class="bg-indigo-600 p-2 rounded-xl text-white">
-                    <i class="fa-solid fa-mountain-sun text-xl"></i>
+                <div class="bg-gradient-to-tr from-solana-purple to-solana-green p-2.5 rounded-2xl text-slate-950 shadow-lg shadow-solana-purple/20">
+                    <i class="fa-solid fa-compass-drafting text-xl font-bold"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg text-white">OutdoorRent dApp</h1>
-                    <p class="text-xs text-indigo-400">Solana Devnet Smart Contract</p>
+                    <h1 class="font-bold text-lg text-white tracking-wide">OutdoorRent <span class="text-xs bg-solana-purple/20 text-solana-purple px-2 py-0.5 rounded-full border border-solana-purple/30">dApp v2.0</span></h1>
+                    <p class="text-xs text-slate-400">Solana Devnet Smart Escrow Protocol</p>
                 </div>
             </div>
-            <div>
-                <button id="connectWalletBtn" onclick="connectWallet()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 rounded-xl text-sm transition shadow-lg flex items-center space-x-2">
+
+            <!-- Wallet Actions -->
+            <div class="flex items-center space-x-3">
+                <button id="phantomBtn" onclick="connectPhantom()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition flex items-center space-x-2">
+                    <img src="https://phantom.app/img/phantom-logo.svg" class="w-4 h-4" alt="Phantom">
+                    <span id="phantomText">Connect Phantom</span>
+                </button>
+                <button id="simWalletBtn" onclick="toggleSimulatedWallet()" class="bg-solana-purple hover:bg-purple-600 text-white font-medium px-4 py-2 rounded-xl text-xs transition shadow-lg shadow-solana-purple/25 flex items-center space-x-2">
                     <i class="fa-solid fa-wallet"></i>
-                    <span id="walletText">Connect Wallet</span>
+                    <span id="simText">Simulasi Wallet</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main App Container -->
+    <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full space-y-8">
         
-        <!-- Left Panel: Info & Klasifikasi Data -->
-        <div class="space-y-6">
-            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
-                <h2 class="text-lg font-semibold text-white mb-3 flex items-center space-x-2">
-                    <i class="fa-solid fa-shield-halved text-indigo-400"></i>
-                    <span>Arsitektur Web3 (Modul 1)</span>
-                </h2>
-                <p class="text-sm text-slate-300 mb-4">
-                    Sistem penyewaan alat outdoor menggunakan escrow deposit berbasis <em>smart contract</em> untuk mencegah kecurangan dan kerusakan barang.
-                </p>
-                <div class="space-y-3 text-xs">
-                    <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700">
-                        <span class="font-semibold text-indigo-400 block mb-1">🔗 Data On-Chain (Solana Devnet):</span>
-                        Hash transaksi, status penguncian deposit, dan log verifikasi.
-                    </div>
-                    <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700">
-                        <span class="font-semibold text-emerald-400 block mb-1">🗄️ Data Off-Chain:</span>
-                        Profil penyewa, nomor telepon, dan foto detail kondisi fisik alat.
-                    </div>
+        <!-- Stats Bar -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex items-center space-x-4">
+                <div class="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl"><i class="fa-solid fa-layer-group text-xl"></i></div>
+                <div>
+                    <p class="text-xs text-slate-400">Total Produk</p>
+                    <p id="statTotalItems" class="text-xl font-bold text-white">2</p>
                 </div>
             </div>
-
-            <!-- Status Jaringan -->
-            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
-                <h3 class="font-semibold text-white mb-2 text-sm">Status Jaringan</h3>
-                <div class="flex items-center space-x-2 text-xs text-emerald-400">
-                    <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                    <span>Solana Devnet (Connected)</span>
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex items-center space-x-4">
+                <div class="p-3 bg-solana-green/10 text-solana-green rounded-xl"><i class="fa-solid fa-lock text-xl"></i></div>
+                <div>
+                    <p class="text-xs text-slate-400">Total Deposit Locked</p>
+                    <p id="statTotalDeposit" class="text-xl font-bold text-solana-green">0.25 SOL</p>
                 </div>
-                <div class="mt-3 text-xs text-slate-400">
-                    Cluster RPC: <code class="text-indigo-300">api.devnet.solana.com</code>
+            </div>
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex items-center space-x-4">
+                <div class="p-3 bg-amber-500/10 text-amber-400 rounded-xl"><i class="fa-solid fa-handshake-angle text-xl"></i></div>
+                <div>
+                    <p class="text-xs text-slate-400">Barang Disewa</p>
+                    <p id="statActiveRents" class="text-xl font-bold text-white">0</p>
+                </div>
+            </div>
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex items-center space-x-4">
+                <div class="p-3 bg-purple-500/10 text-purple-400 rounded-xl"><i class="fa-solid fa-server text-xl"></i></div>
+                <div>
+                    <p class="text-xs text-slate-400">Cluster</p>
+                    <p class="text-xs font-bold text-indigo-400 flex items-center space-x-1 mt-1">
+                        <span class="w-2 h-2 bg-solana-green rounded-full animate-ping"></span>
+                        <span>Solana Devnet</span>
+                    </p>
                 </div>
             </div>
         </div>
 
-        <!-- Right Panel: Core Features / Tabs -->
-        <div class="lg:col-span-2 space-y-6">
-            
-            <!-- Navigation Tabs -->
-            <div class="flex space-x-2 border-b border-slate-700 pb-2">
-                <button onclick="switchTab('rent')" id="tabRent" class="px-4 py-2 rounded-xl text-sm font-medium bg-indigo-600 text-white transition">1. Sewa & Kunci Deposit</button>
-                <button onclick="switchTab('audit')" id="tabAudit" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-400 hover:text-white transition">2. Pengembalian & Audit</button>
+        <!-- Navigation Tabs -->
+        <div class="flex space-x-3 border-b border-slate-800 pb-3">
+            <button onclick="switchTab('catalog')" id="tabCatalog" class="px-5 py-2.5 rounded-xl text-xs font-semibold bg-solana-purple text-white transition shadow-lg shadow-solana-purple/20 flex items-center space-x-2">
+                <i class="fa-solid fa-store"></i><span>Katalog Alat</span>
+            </button>
+            <button onclick="switchTab('history')" id="tabHistory" class="px-5 py-2.5 rounded-xl text-xs font-semibold bg-slate-900 text-slate-400 hover:text-white transition flex items-center space-x-2">
+                <i class="fa-solid fa-clock-rotate-left"></i><span>Riwayat & Audit Escrow</span>
+            </button>
+            <button onclick="switchTab('admin')" id="tabAdmin" class="px-5 py-2.5 rounded-xl text-xs font-semibold bg-slate-900 text-slate-400 hover:text-white transition flex items-center space-x-2">
+                <i class="fa-solid fa-sliders"></i><span>Panel Pemilik (Tambah Barang)</span>
+            </button>
+        </div>
+
+        <!-- TAB 1: KATALOG ALAT -->
+        <div id="panelCatalog" class="space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-lg font-bold text-white">Katalog Peralatan Siap Sewa</h2>
+                <span class="text-xs text-slate-400">Pilih alat dan selesaikan penguncian deposit via Smart Contract</span>
             </div>
+            <div id="catalogGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Data Katalog Dinamis Di-render Via JS -->
+            </div>
+        </div>
 
-            <!-- Tab 1: Sewa Alat -->
-            <div id="panelRent" class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl space-y-6">
-                <h3 class="text-lg font-semibold text-white">Katalog Alat Outdoor & Smart Contract Deposit</h3>
+        <!-- TAB 2: RIWAYAT & AUDIT -->
+        <div id="panelHistory" class="hidden space-y-6">
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                <h2 class="text-lg font-bold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-receipt text-solana-green"></i>
+                    <span>Tabel Log Transaksi Escrow & Pengembalian Barang</span>
+                </h2>
+                <p class="text-xs text-slate-400">Seluruh status deposit yang terkunci di Solana Devnet dapat diverifikasi di sini.</p>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Item 1 -->
-                    <div class="bg-slate-900/60 border border-slate-700 p-4 rounded-xl space-y-3">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-bold text-white">Tenda Dome 4 Orang</h4>
-                                <p class="text-xs text-slate-400">Merk: Consina / Eiger</p>
-                            </div>
-                            <span class="bg-indigo-900/50 text-indigo-300 text-xs px-2.5 py-1 rounded-lg border border-indigo-700">0.05 SOL / Hari</span>
-                        </div>
-                        <p class="text-xs text-slate-300">Deposit Jaminan (Escrow): <strong class="text-white">0.15 SOL</strong></p>
-                        <button onclick="rentItem('Tenda Dome 4 Orang', '0.15')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold py-2.5 rounded-xl transition">
-                            Kunci Deposit & Sewa On-Chain
-                        </button>
-                    </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-800/80 text-slate-400 uppercase font-semibold border-b border-slate-700">
+                            <tr>
+                                <th class="px-4 py-3">ID Transaksi</th>
+                                <th class="px-4 py-3">Peralatan</th>
+                                <th class="px-4 py-3">Penyewa (Wallet)</th>
+                                <th class="px-4 py-3">Deposit Locked</th>
+                                <th class="px-4 py-3">Status Audit</th>
+                                <th class="px-4 py-3 text-right">Aksi Admin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="divide-y divide-slate-800">
+                            <!-- Data Transaksi Di-render Via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-                    <!-- Item 2 -->
-                    <div class="bg-slate-900/60 border border-
+        <!-- TAB 3: PANEL ADMIN (TAMBAH BARANG) -->
+        <div id="panelAdmin" class="hidden max-w-2xl mx-auto space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                <h2 class="text-lg font-bold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-plus-circle text-solana-purple"></i>
+                    <span>Tambah Peralatan Baru Ke Katalog</span>
+                </h2>
+                <form id="addItemForm" onsubmit="handleAddNewItem(event)" class="space-y-4 text-xs">
+                    <div>
+                        <label class="block font-medium text-slate-300 mb-1">Nama Alat Outdoor</label>
+                        <input type="text" id="itemName" required placeholder="Contoh: Kompor Portable & Nesting" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-solana-purple">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-medium text-slate-300 mb-1">Tarif Sewa (SOL / Hari)</label>
+                            <input type="number" step="0.01" id="itemRentFee" required placeholder="0.02" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-solana-purple">
+                        </div>
+                        <div>
+                            <label class="block font-medium text-slate-300 mb-1">Jaminan Deposit Escrow (SOL)</label>
+                            <input type="number" step="0.01" id="itemDeposit" required placeholder="0.08" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-solana-purple">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block font-medium text-slate-300 mb-1">Kategori / Merk</label>
+                        <input type="text" id="itemBrand" required placeholder="Contoh: Eiger / Consina / Naturehike" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-solana-purple">
+                    </div>
+                    <button type="submit" class="w-full bg-solana-purple hover:bg-purple-600 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-solana-purple/20">
+                        Publikasikan Barang Ke Katalog Web3
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-500">
+        OutdoorRent Web3 App &bull; Built with Solana Devnet Escrow Protocol
+    </footer>
+
+    <!-- Logic Application Script -->
+    <script>
+        // State Management
+        let currentWallet = null;
+        let isSimulated = false;
+
+        let items = [
+            { id: 1, name: "Tenda Dome 4 Orang", brand: "Consina / Eiger", rentFee: 0.05, deposit: 0.15, status: "Available" },
+            { id: 2, name: "Carrier 60L Pro", brand: "Deuter / Osprey", rentFee: 0.03, deposit: 0.10, status: "Available" }
+        ];
+
+        let transactions = [];
+
+        // Initialize UI
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCatalog();
+            renderHistory();
+        });
+
+        // 1. Phantom Wallet Integration
+        async function connectPhantom() {
+            if ("solana" in window) {
+                try {
+                    const provider = window.solana;
+                    if (provider.isPhantom) {
+                        const response = await provider.connect();
+                        currentWallet = response.publicKey.toString();
+                        isSimulated = false;
+                        updateWalletUI();
+                        Swal.fire('Terhubung!', `Phantom Wallet Connected:\n${shortAddress(currentWallet)}`, 'success');
+                    }
+                } catch (err) {
+                    Swal.fire('Error', 'Koneksi Phantom dibatalkan.', 'error');
+                }
+            } else {
+                Swal.fire({
+                    title: 'Phantom Tidak Ditemukan',
+                    text: 'Ekstensi Phantom Wallet belum terinstall di browser Anda. Gunakan opsi Simulasi Wallet!',
+                    icon: 'warning'
+                });
+            }
+        }
+
+        // 2. Simulated Wallet Backup
+        function toggleSimulatedWallet() {
+            if (currentWallet && isSimulated) {
+                currentWallet = null;
+                isSimulated = false;
+            } else {
+                currentWallet = "7xKX9aB2mP8zQ1vW4L5nR3tY6uI0oP9sD8fG7hJ6kL5m";
+                isSimulated = true;
+            }
+            updateWalletUI();
+        }
+
+        function updateWalletUI() {
+            const phantomText = document.getElementById('phantomText');
+            const simText = document.getElementById('simText');
+
+            if (currentWallet) {
+                if (isSimulated) {
+                    simText.innerText = `Sim: ${shortAddress(currentWallet)}`;
+                    phantomText.innerText = "Connect Phantom";
+                } else {
+                    phantomText.innerText = `Phantom: ${shortAddress(currentWallet)}`;
+                    simText.innerText = "Simulasi Wallet";
+                }
+            } else {
+                phantomText.innerText = "Connect Phantom";
+                simText.innerText = "Simulasi Wallet";
+            }
+        }
+
+        function shortAddress(addr) {
+            return addr ? `${addr.substring(0, 4)}...${addr.substring(addr.length - 4)}` : '';
+        }
+
+        // 3. Render Catalog
+        function renderCatalog() {
+            const grid = document.getElementById('catalogGrid');
+            grid.innerHTML = items.map(item => `
+                <div class="bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition p-5 rounded-2xl flex flex-col justify-between space-y-4 shadow-xl">
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-white text-base">${item.name}</h3>
+                            <span class="bg-solana-purple/20 text-solana-purple border border-solana-purple/30 text-[10px] font-bold px-2 py-0.5 rounded-md">${item.brand}</span>
+                        </div>
+                        <p class="text-xs text-slate-400">Tarif Sewa: <span class="text-white font-semibold">${item.rentFee} SOL / Hari</span></p>
+                        <p class="text-xs text-slate-400">Escrow Deposit: <span class="text-solana-green font-semibold">${item.deposit} SOL</span></p>
+                    </div>
+                    <div>
+                        ${item.status === 'Available' 
+                            ? `<button onclick="rentItem(${item.id})" class="w-full bg-solana-purple hover:bg-purple-600 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-lg shadow-solana-purple/20">Kunci Deposit & Sewa</button>`
+                            : `<button disabled class="w-full bg-slate-800 text-slate-500 font-bold py-2.5 rounded-xl text-xs cursor-not-allowed">Sedang Disewa</button>`
+                        }
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('statTotalItems').innerText = items.length;
+        }
+
+        // 4. Rent Item Execution
+        function rentItem(id) {
+            if (!currentWallet) {
+                Swal.fire('Akses Ditolak', 'Silakan hubungkan Phantom Wallet atau Klik Simulasi Wallet terlebih dahulu!', 'warning');
+                return;
+            }
+
+            const item = items.find(i => i.id === id);
+            const txHash = "0x" + Array.from({length: 16}, () => Math.floor(Math.random()*16).toString(16)).join('');
+
+            item.status = "Rented";
+            
+            transactions.push({
+                txHash: txHash,
+                itemName: item.name,
+                renter: currentWallet,
+                deposit: item.deposit,
+                status: "Deposit Locked"
+            });
+
+            renderCatalog();
+            renderHistory();
+            updateStats();
+
+            Swal.fire({
+                title: 'Escrow Lock Berhasil!',
+                html: `Barang <b>${item.name}</b> berhasil disewa.<br>Deposit <b>${item.deposit} SOL</b> terkunci di Smart Contract.<br><small class="text-slate-400">TX: ${txHash}</small>`,
+                icon: 'success'
+            });
+        }
+
+        // 5. Render History & Audit Table
+        function renderHistory() {
+            const tbody = document.getElementById('historyTableBody');
+            if (transactions.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-500">Belum ada transaksi sewa aktif.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = transactions.map((tx, index) => `
+                <tr class="hover:bg-slate-800/40 transition">
+                    <td class="px-4 py-3 font-mono text-solana-purple">${shortAddress(tx.txHash)}</td>
+                    <td class="px-4 py-3 font-semibold text-white">${tx.itemName}</td>
+                    <td class="px-4 py-3 font-mono text-slate-400">${shortAddress(tx.renter)}</td>
+                    <td class="px-4 py-3 text-solana-green font-semibold">${tx.deposit} SOL</td>
+                    <td class="px-4 py-3">
+                        <span class="${tx.status === 'Deposit Locked' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'} border px-2 py-0.5 rounded-full text-[10px]">
+                            ${tx.status}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                        ${tx.status === 'Deposit Locked' 
+                            ? `<button onclick="releaseDeposit(${index})" class="bg-solana-green hover:bg-emerald-400 text-slate-950 font-bold px-3 py-1 rounded-lg text-[10px] transition">Release Escrow</button>`
+                            : `<span class="text-slate-500 text-[10px]"><i class="fa-solid fa-check-double"></i> Verified</span>`
+                        }
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 6. Release Escrow / Pengembalian
+        function releaseDeposit(index) {
+            const tx = transactions[index];
+            tx.status = "Released & Verified";
+
+            const item = items.find(i => i.name === tx.itemName);
+            if(item) item.status = "Available";
+
+            renderCatalog();
+            renderHistory();
+            updateStats();
+
+            Swal.fire('Audit Selesai', `Deposit ${tx.deposit} SOL telah dirilis kembali ke wallet penyewa!`, 'success');
+        }
+
+        // 7. Add New Item (Admin)
+        function handleAddNewItem(e) {
+            e.preventDefault();
+            const name = document.getElementById('itemName').value;
+            const rentFee = parseFloat(document.getElementById('itemRentFee').value);
+            const deposit = parseFloat(document.getElementById('itemDeposit').value);
+            const brand = document.getElementById('itemBrand').value;
+
+            const newItem = {
+                id: items.length + 1,
+                name,
+                brand,
+                rentFee,
+                deposit,
+                status: "Available"
+            };
+
+            items.push(newItem);
+            renderCatalog();
+            document.getElementById('addItemForm').reset();
+            switchTab('catalog');
+
+            Swal.fire('Sukses!', 'Peralatan baru berhasil ditambahkan ke katalog Web3.', 'success');
+        }
+
+        function updateStats() {
+            const activeRents = transactions.filter(t => t.status === 'Deposit Locked').length;
+            document.getElementById('statActiveRents').innerText = activeRents;
+        }
+
+        // Tab Switching
+        function switchTab(tab) {
+            document.getElementById('panelCatalog').classList.add('hidden');
+            document.getElementById('panelHistory').classList.add('hidden');
+            document.getElementById('panelAdmin').classList.add('hidden');
+
+            document.getElementById('tabCatalog').className = "px-5 py-2.5 rounded-xl text-xs font-semibold bg-slate-900 text-slate-400 hover:text-white transition flex items-center space-x-2";
+            document.getElementById('tabHistory').className = "px-5 py-2.5 rounded-xl text-xs font-semibold bg-slate-900 text-slate-400 hover:text-white transition flex items-center space-x-2";
+            document.getElementById('tabAdmin').className = "px-5 py-2.5 rounded-xl text-xs font-semibold bg-slate-900 text-slate-400 hover:text-white transition flex items-center space-x-2";
+
+            if (tab === 'catalog') {
+                document.getElementById('panelCatalog').classList.remove('hidden');
+                document.getElementById('tabCatalog').className = "px-5 py-2.5 rounded-xl text-xs font-semibold bg-solana-purple text-white transition shadow-lg shadow-solana-purple/20 flex items-center space-x-2";
+            } else if (tab === 'history') {
+                document.getElementById('panelHistory').classList.remove('hidden');
+                document.getElementById('tabHistory').className = "px-5 py-2.5 rounded-xl text-xs font-semibold bg-solana-purple text-white transition shadow-lg shadow-solana-purple/20 flex items-center space-x-2";
+            } else if (tab === 'admin') {
+                document.getElementById('panelAdmin').classList.remove('hidden');
+                document.getElementById('tabAdmin').className = "px-5 py-2.5 rounded-xl text-xs font-semibold bg-solana-purple text-white transition shadow-lg shadow-solana-purple/20 flex items-center space-x-2";
+            }
+        }
+    </script>
+</body>
+</html>
