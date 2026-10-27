@@ -1,9 +1,10 @@
 <!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="id" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OutdoorRent - Web3 Smart POS & Inventory v6.1</title>
+    <title>OutdoorRent - Web3 Smart POS & Inventory v6.2</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -41,9 +42,9 @@
                 <div>
                     <h1 class="font-bold text-lg text-white tracking-wide flex items-center gap-2">
                         OutdoorRent POS 
-                        <span class="text-[10px] bg-solana-purple/20 text-solana-purple px-2 py-0.5 rounded-full border border-solana-purple/30 font-semibold">v6.1 Enterprise</span>
+                        <span class="text-[10px] bg-solana-purple/20 text-solana-purple px-2 py-0.5 rounded-full border border-solana-purple/30 font-semibold">v6.2 Enterprise + Auth</span>
                     </h1>
-                    <p class="text-xs text-slate-400">Sistem Kasir Rental, Stok, Audit & Escrow Protocol</p>
+                    <p class="text-xs text-slate-400">Sistem Kasir Rental, Verifikasi Fisik, Audit & Escrow Protocol</p>
                 </div>
             </div>
 
@@ -81,10 +82,10 @@
                 <i class="fa-solid fa-cart-shopping"></i><span>Aplikasi Kasir (POS)</span>
             </button>
             <button onclick="switchTab('inventory')" id="tabInventory" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900 text-slate-400 hover:text-white transition flex items-center space-x-2 whitespace-nowrap">
-                <i class="fa-solid fa-boxes-stacked"></i><span>Manajemen Stok & Produk</span>
+                <i class="fa-solid fa-boxes-stacked"></i><span>Manajemen Stok & Serial Tag</span>
             </button>
             <button onclick="switchTab('audit')" id="tabAudit" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900 text-slate-400 hover:text-white transition flex items-center space-x-2 whitespace-nowrap">
-                <i class="fa-solid fa-clipboard-check"></i><span>Pengembalian & Audit Denda</span>
+                <i class="fa-solid fa-shield-halved"></i><span>Verifikasi Fisik & Audit Denda</span>
             </button>
             <button onclick="switchTab('reports')" id="tabReports" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900 text-slate-400 hover:text-white transition flex items-center space-x-2 whitespace-nowrap">
                 <i class="fa-solid fa-chart-line"></i><span>Laporan Keuangan & Ledger</span>
@@ -97,7 +98,7 @@
             <div class="lg:col-span-2 space-y-4">
                 <div class="flex justify-between items-center bg-slate-900/60 p-4 border border-slate-800 rounded-2xl">
                     <h2 class="font-bold text-white text-sm flex items-center gap-2">
-                        <i class="fa-solid fa-store text-solana-purple"></i> Pilih Peralatan Outdoor
+                        <i class="fa-solid fa-store text-solana-purple"></i> Pilih Peralatan Outdoor (Terverifikasi Hologram)
                     </h2>
                     <input type="text" id="posSearchInput" oninput="renderPosCatalog()" placeholder="Cari nama barang / merk..." class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-solana-purple w-56">
                 </div>
@@ -148,7 +149,7 @@
                             <span>Otorisasi Escrow Deposit:</span>
                             <span id="cartDepositTotal" class="text-solana-green font-medium">Rp 0</span>
                         </div>
-                        <p class="text-[10px] text-slate-500 italic">*Deposit hanya di-hold virtual dan dipotong bila terjadi kerusakan.</p>
+                        <p class="text-[10px] text-slate-500 italic">*Deposit di-hold virtual untuk jaminan keaslian & kondisi fisik barang.</p>
                         <div class="flex justify-between text-sm font-bold text-white pt-2 border-t border-slate-800/60">
                             <span>Total Bayar Awal (Sewa):</span>
                             <span id="cartGrandTotal" class="text-solana-purple">Rp 0</span>
@@ -162,36 +163,40 @@
             </div>
         </div>
 
-        <!-- TAB 2: MANAJEMEN STOK & PRODUK (ADMIN PANEL) -->
+        <!-- TAB 2: MANAJEMEN STOK & SERIAL TAG (ADMIN PANEL) -->
         <div id="panelInventory" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Form Add Product -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
                 <h3 class="font-bold text-white text-sm flex items-center gap-2 border-b border-slate-800 pb-3">
-                    <i class="fa-solid fa-square-plus text-solana-purple"></i> Tambah Produk Baru
+                    <i class="fa-solid fa-square-plus text-solana-purple"></i> Tambah Produk & Tag Keaslian
                 </h3>
                 <form id="addProductForm" onsubmit="handleAddNewProduct(event)" class="space-y-3 text-xs">
                     <div>
                         <label class="block text-slate-400 mb-1">Nama Alat Outdoor *</label>
-                        <input type="text" id="prodName" required placeholder="Contoh: Lampu Tenda LED Solar" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-solana-purple">
+                        <input type="text" id="prodName" required placeholder="Contoh: Tenda Dome Ultralight" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-solana-purple">
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="block text-slate-400 mb-1">Merk / Kategori *</label>
+                            <label class="block text-slate-400 mb-1">Merk / Brand *</label>
                             <input type="text" id="prodBrand" required placeholder="Naturehike" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-solana-purple">
                         </div>
                         <div>
-                            <label class="block text-slate-400 mb-1">Stok Awal *</label>
-                            <input type="number" id="prodStock" min="1" required placeholder="10" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-solana-purple">
+                            <label class="block text-slate-400 mb-1">ID Tag / Serial Unik *</label>
+                            <input type="text" id="prodSerial" required placeholder="HOLO-TND-99" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-solana-purple">
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-3 gap-2">
                         <div>
-                            <label class="block text-slate-400 mb-1">Tarif Sewa (Rp/Hari) *</label>
-                            <input type="number" id="prodRentFee" min="1000" required placeholder="15000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-solana-purple">
+                            <label class="block text-slate-400 mb-1">Stok *</label>
+                            <input type="number" id="prodStock" min="1" required placeholder="5" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-solana-purple">
                         </div>
                         <div>
-                            <label class="block text-slate-400 mb-1">Deposit Escrow (Rp) *</label>
-                            <input type="number" id="prodDeposit" min="1000" required placeholder="50000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-solana-purple">
+                            <label class="block text-slate-400 mb-1">Tarif/Hari *</label>
+                            <input type="number" id="prodRentFee" min="1000" required placeholder="35000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-solana-purple">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1">Deposit *</label>
+                            <input type="number" id="prodDeposit" min="1000" required placeholder="100000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-solana-purple">
                         </div>
                     </div>
                     <button type="submit" class="w-full bg-solana-green hover:bg-emerald-400 text-slate-950 font-bold py-2.5 rounded-xl transition shadow-lg shadow-solana-green/20 mt-2">
@@ -203,17 +208,17 @@
             <!-- Inventory Stock Table -->
             <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
                 <h3 class="font-bold text-white text-sm flex items-center justify-between border-b border-slate-800 pb-3">
-                    <span><i class="fa-solid fa-list-check text-solana-green mr-2"></i>Daftar Stok Inventaris</span>
+                    <span><i class="fa-solid fa-shield-check text-solana-green mr-2"></i>Daftar Inventaris & Kode Serial Keaslian</span>
                     <span id="totalStockCount" class="text-xs text-slate-400">Total: 0 Item</span>
                 </h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-slate-300">
                         <thead class="bg-slate-800/80 text-slate-400 uppercase font-semibold border-b border-slate-700">
                             <tr>
-                                <th class="px-3 py-2.5">Produk</th>
-                                <th class="px-3 py-2.5">Stok Tersedia</th>
+                                <th class="px-3 py-2.5">Produk & Merk</th>
+                                <th class="px-3 py-2.5">Serial Tag / Hologram</th>
+                                <th class="px-3 py-2.5">Stok</th>
                                 <th class="px-3 py-2.5">Tarif/Hari</th>
-                                <th class="px-3 py-2.5">Escrow Deposit</th>
                                 <th class="px-3 py-2.5 text-right">Aksi</th>
                             </tr>
                         </thead>
@@ -225,15 +230,15 @@
             </div>
         </div>
 
-        <!-- TAB 3: PENGEMBALIAN & AUDIT DENDA -->
+        <!-- TAB 3: VERIFIKASI FISIK & AUDIT DENDA -->
         <div id="panelAudit" class="space-y-4 hidden">
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <div>
                         <h3 class="font-bold text-white text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-clipboard-check text-solana-green"></i> Riwayat Transaksi & Audit Pengembalian
+                            <i class="fa-solid fa-shield-halved text-solana-green"></i> Verifikasi Keaslian Fisik & Audit Pengembalian
                         </h3>
-                        <p class="text-xs text-slate-400">Proses klaim denda dari otorisasi deposit jika barang rusak atau terlambat.</p>
+                        <p class="text-xs text-slate-400">Pastikan nomor serial / tag hologram fisik sesuai untuk mencegah pemalsuan atau pertukaran barang.</p>
                     </div>
                 </div>
 
@@ -243,11 +248,10 @@
                             <tr>
                                 <th class="px-3 py-2.5">No. Invoice</th>
                                 <th class="px-3 py-2.5">Penyewa & Kasir</th>
-                                <th class="px-3 py-2.5">Detail Alat</th>
+                                <th class="px-3 py-2.5">Detail Alat & Serial Tag</th>
                                 <th class="px-3 py-2.5">Total Sewa</th>
-                                <th class="px-3 py-2.5">Escrow Deposit</th>
-                                <th class="px-3 py-2.5">Status Audit</th>
-                                <th class="px-3 py-2.5 text-right">Aksi Audit</th>
+                                <th class="px-3 py-2.5">Status Audit Keaslian</th>
+                                <th class="px-3 py-2.5 text-right">Aksi Verifikasi</th>
                             </tr>
                         </thead>
                         <tbody id="auditTableBody" class="divide-y divide-slate-800">
@@ -258,7 +262,7 @@
             </div>
         </div>
 
-        <!-- TAB 4: LAPORAN KEANGAN (HARIAN, MINGGUAN, BULANAN, TAHUNAN) -->
+        <!-- TAB 4: LAPORAN KEUANGAN & LEDGER -->
         <div id="panelReports" class="space-y-6 hidden">
             <!-- Financial Summary Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -347,7 +351,7 @@
                 <div class="text-center border-b border-dashed border-slate-300 pb-3">
                     <h2 class="font-bold text-base tracking-wider text-slate-950">OUTDOORRENT GEAR</h2>
                     <p class="text-[10px] text-slate-600">Jl. Prof. Soedarto No. 45, Semarang</p>
-                    <p class="text-[10px] text-slate-600">WhatsApp: 0812-3456-7890</p>
+                    <p class="text-[10px] text-slate-600">Sistem Verifikasi Tag Hologram Terenkripsi</p>
                 </div>
                 <div class="space-y-1 text-[11px] border-b border-dashed border-slate-300 pb-3">
                     <div class="flex justify-between"><span>No. Struk:</span><span id="recInvoice" class="font-bold">#ORD-001</span></div>
@@ -357,7 +361,7 @@
                     <div class="flex justify-between"><span>Durasi:</span><span id="recDays">2 Hari</span></div>
                 </div>
                 <div class="space-y-1.5 border-b border-dashed border-slate-300 pb-3">
-                    <p class="font-bold text-[10px] text-slate-500 uppercase">Item Disewa:</p>
+                    <p class="font-bold text-[10px] text-slate-500 uppercase">Item & Serial Tag Disewa:</p>
                     <div id="recItemsList" class="space-y-1">
                         <!-- Printed Items -->
                     </div>
@@ -368,7 +372,7 @@
                 </div>
                 <div class="text-center border-t border-dashed border-slate-300 pt-3 text-[10px] text-slate-500">
                     <p>*** Terima Kasih ***</p>
-                    <p>Simpan Struk Ini Untuk Pengembalian Barang & Release Escrow Deposit</p>
+                    <p>Keaslian fisik barang diverifikasi saat pengembalian.</p>
                 </div>
             </div>
 
@@ -383,36 +387,54 @@
         </div>
     </div>
 
-    <!-- MODAL 2: AUDIT PENGEMBALIAN & KLIK DENDA -->
+    <!-- MODAL 2: VERIFIKASI FISIK & AUDIT DENDA -->
     <div id="modalReturn" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
             <h3 class="font-bold text-white text-base flex items-center gap-2 border-b border-slate-800 pb-3">
-                <i class="fa-solid fa-clipboard-check text-solana-green"></i> Audit Kondisi Pengembalian
+                <i class="fa-solid fa-shield-halved text-solana-green"></i> Verifikasi Fisik & Keaslian Barang
             </h3>
             <div class="space-y-3 text-xs">
                 <input type="hidden" id="auditTxIndex">
+                
+                <!-- Verification Status Selection -->
                 <div>
-                    <label class="block text-slate-400 mb-1">Kondisi Barang *</label>
-                    <select id="auditCondition" onchange="toggleFineInput()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-solana-purple">
-                        <option value="Good">Lengkap & Baik (Tidak Ada Denda)</option>
-                        <option value="Damaged">Rusak / Keterlambatan (Potong Deposit)</option>
-                        <option value="Lost">Hilang / Komponen Rusak Total (Klaim Deposit)</option>
+                    <label class="block text-slate-400 mb-1 font-semibold">1. Status Verifikasi Serial Tag / Hologram *</label>
+                    <select id="auditAuthStatus" onchange="toggleAuthFailureFields()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-solana-purple">
+                        <option value="Authentic">Valid (Nomor Serial & Hologram Sesuai Asli)</option>
+                        <option value="Counterfeit">Palsu / Barang Ditukar (Counterfeit / Imitasi)</option>
+                        <option value="Damaged">Asli, Namun Rusak / Ada Komponen Hilang</option>
                     </select>
                 </div>
+
+                <!-- Info Box for Anti-Counterfeit -->
+                <div id="authWarningBox" class="bg-red-500/10 border border-red-500/30 p-3 rounded-xl text-red-300 hidden space-y-1">
+                    <p class="font-bold flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation"></i> Peringatan Barang Palsu / Tukar!</p>
+                    <p class="text-[11px]">Penyewa terindikasi mengembalikan barang tiruan atau menukar nomor serial. Klaim seluruh deposit dan kenakan denda pemalsuan.</p>
+                </div>
+
+                <div>
+                    <label class="block text-slate-400 mb-1 font-semibold">2. Kondisi Fisik Alat *</label>
+                    <select id="auditCondition" onchange="toggleFineInput()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-solana-purple">
+                        <option value="Good">Lengkap & Baik (Tidak Ada Denda)</option>
+                        <option value="Damaged">Ada Kerusakan / Keterlambatan Waktu</option>
+                        <option value="Lost">Hilang Total / Tidak Dikembalikan</option>
+                    </select>
+                </div>
+
                 <div id="fineInputGroup" class="hidden space-y-2">
                     <div>
-                        <label class="block text-amber-400 mb-1 font-semibold">Nominal Denda (Rp) *</label>
+                        <label class="block text-amber-400 mb-1 font-semibold">Nominal Denda Tambahan (Rp) *</label>
                         <input type="number" min="0" id="auditFineAmount" placeholder="0" class="w-full bg-slate-950 border border-amber-500/50 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-400">
                     </div>
                     <div>
-                        <label class="block text-slate-400 mb-1">Keterangan Denda / Kerusakan</label>
-                        <input type="text" id="auditFineReason" placeholder="Contoh: Tenda robek 10cm / Telat 1 hari" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-solana-purple">
+                        <label class="block text-slate-400 mb-1">Catatan / Alasan Denda / Ketidaksesuaian Fisik</label>
+                        <input type="text" id="auditFineReason" placeholder="Contoh: Serial tag terkelupas / Ditemukan barang tiruan" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-solana-purple">
                     </div>
                 </div>
             </div>
             <div class="flex gap-2 pt-2">
                 <button onclick="submitReturnAudit()" class="flex-1 bg-solana-green hover:bg-emerald-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition">
-                    Selesaikan Audit & Release Escrow
+                    Selesaikan Verifikasi & Release Escrow
                 </button>
                 <button onclick="closeModal('modalReturn')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-2.5 rounded-xl text-xs transition">
                     Batal
@@ -457,12 +479,12 @@
 
         let cart = [];
 
-        // Inventory Data
+        // Inventory Data with Physical Serial & Authenticity Tags
         let products = [
-            { id: 1, name: "Tenda Dome 4 Orang", brand: "Consina / Eiger", stock: 5, rentFee: 35000, deposit: 100000 },
-            { id: 2, name: "Carrier 60L Pro", brand: "Deuter / Osprey", stock: 8, rentFee: 20000, deposit: 75000 },
-            { id: 3, name: "Kompor Portable & Nesting Set", brand: "Naturehike", stock: 12, rentFee: 15000, deposit: 50000 },
-            { id: 4, name: "Sleeping Bag Polar Warm", brand: "Eiger", stock: 10, rentFee: 10000, deposit: 40000 }
+            { id: 1, name: "Tenda Dome 4 Orang", brand: "Consina / Eiger", serialTag: "HOLO-TND-001", stock: 5, rentFee: 35000, deposit: 100000 },
+            { id: 2, name: "Carrier 60L Pro", brand: "Deuter / Osprey", serialTag: "HOLO-CAR-042", stock: 8, rentFee: 20000, deposit: 75000 },
+            { id: 3, name: "Kompor Portable & Nesting", brand: "Naturehike", serialTag: "HOLO-STV-108", stock: 12, rentFee: 15000, deposit: 50000 },
+            { id: 4, name: "Sleeping Bag Polar Warm", brand: "Eiger", serialTag: "HOLO-SB-019", stock: 10, rentFee: 10000, deposit: 40000 }
         ];
 
         let rentals = [];
@@ -498,6 +520,7 @@
                             <h4 class="font-bold text-white text-sm">${item.name}</h4>
                             <span class="bg-solana-purple/20 text-solana-purple border border-solana-purple/30 text-[10px] font-bold px-2 py-0.5 rounded-md">${item.brand}</span>
                         </div>
+                        <p class="text-[11px] text-solana-green font-mono mb-1"><i class="fa-solid fa-barcode"></i> Serial: ${item.serialTag}</p>
                         <p class="text-xs text-slate-400">Tarif: <span class="text-white font-semibold">${formatRupiah(item.rentFee)} / Hari</span></p>
                         <p class="text-xs text-slate-400">Escrow Hold: <span class="text-solana-green font-semibold">${formatRupiah(item.deposit)}</span></p>
                         <p class="text-xs ${item.stock > 0 ? 'text-slate-300' : 'text-red-400 font-bold'} mt-1">Stok Tersedia: <b>${item.stock} unit</b></p>
@@ -557,6 +580,7 @@
                     <div class="flex justify-between items-center py-1.5 text-xs">
                         <div>
                             <p class="font-bold text-white">${c.name}</p>
+                            <p class="text-[10px] text-solana-green font-mono">Tag: ${c.serialTag}</p>
                             <p class="text-[10px] text-slate-400">${formatRupiah(c.rentFee)} x ${c.qty}</p>
                         </div>
                         <div class="flex items-center space-x-1.5">
@@ -618,6 +642,7 @@
                 totalRent: rentSubtotal,
                 totalDeposit: depositTotal,
                 status: "Deposit Locked",
+                authResult: "Pending Verification",
                 fine: 0,
                 date: timestamp
             };
@@ -657,7 +682,7 @@
 
             document.getElementById('recItemsList').innerHTML = rental.items.map(i => `
                 <div class="flex justify-between">
-                    <span>${i.name} (x${i.qty})</span>
+                    <span>${i.name} [${i.serialTag}] (x${i.qty})</span>
                     <span>${formatRupiah(i.rentFee * i.qty * rental.days)}</span>
                 </div>
             `).join('');
@@ -685,6 +710,7 @@
             e.preventDefault();
             const name = document.getElementById('prodName').value;
             const brand = document.getElementById('prodBrand').value;
+            const serialTag = document.getElementById('prodSerial').value;
             const stock = parseInt(document.getElementById('prodStock').value);
             const rentFee = parseFloat(document.getElementById('prodRentFee').value);
             const deposit = parseFloat(document.getElementById('prodDeposit').value);
@@ -693,6 +719,7 @@
                 id: products.length + 1,
                 name,
                 brand,
+                serialTag,
                 stock,
                 rentFee,
                 deposit
@@ -701,7 +728,7 @@
             document.getElementById('addProductForm').reset();
             renderPosCatalog();
             renderInventoryTable();
-            Swal.fire('Sukses', 'Produk baru berhasil ditambahkan ke stok toko.', 'success');
+            Swal.fire('Sukses', 'Produk dan Serial Tag keaslian berhasil ditambahkan.', 'success');
         }
 
         function renderInventoryTable() {
@@ -711,9 +738,9 @@
             tbody.innerHTML = products.map((p, idx) => `
                 <tr class="hover:bg-slate-800/40 transition">
                     <td class="px-3 py-2.5 font-bold text-white">${p.name} <span class="text-[10px] text-solana-purple font-normal">(${p.brand})</span></td>
+                    <td class="px-3 py-2.5 font-mono text-solana-green font-semibold">${p.serialTag}</td>
                     <td class="px-3 py-2.5 font-bold ${p.stock > 0 ? 'text-solana-green' : 'text-red-400'}">${p.stock} unit</td>
                     <td class="px-3 py-2.5 text-white">${formatRupiah(p.rentFee)}</td>
-                    <td class="px-3 py-2.5 text-solana-green">${formatRupiah(p.deposit)}</td>
                     <td class="px-3 py-2.5 text-right space-x-1">
                         <button onclick="quickAddStock(${idx})" class="bg-slate-800 hover:bg-slate-700 text-white px-2 py-1 rounded text-[10px]">+ Stok</button>
                     </td>
@@ -728,12 +755,12 @@
             Swal.fire('Stok Diperbarui', `Stok ${products[idx].name} bertambah +5 unit.`, 'success');
         }
 
-        // 5. Audit & Return Engine
+        // 5. Audit & Authenticity Verification Engine
         function renderAuditTable() {
             const tbody = document.getElementById('auditTableBody');
 
             if (rentals.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-500">Belum ada transaksi sewa aktif.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-500">Belum ada transaksi sewa aktif.</td></tr>`;
                 return;
             }
 
@@ -745,18 +772,18 @@
                         <p class="text-[10px] text-slate-400">Kasir: ${r.cashier}</p>
                     </td>
                     <td class="px-3 py-2.5 text-[11px] text-slate-300">
-                        ${r.items.map(i => `${i.name} (${i.qty})`).join(', ')}
+                        ${r.items.map(i => `${i.name} <br><span class='text-solana-green font-mono'>[Tag: ${i.serialTag}]</span>`).join('<br>')}
                     </td>
                     <td class="px-3 py-2.5 font-semibold text-white">${formatRupiah(r.totalRent)}</td>
-                    <td class="px-3 py-2.5 text-solana-green font-semibold">${formatRupiah(r.totalDeposit)}</td>
                     <td class="px-3 py-2.5">
-                        <span class="${r.status === 'Deposit Locked' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'} border px-2 py-0.5 rounded-full text-[10px]">
+                        <span class="${r.status === 'Deposit Locked' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'} border px-2 py-0.5 rounded-full text-[10px] block w-max mb-1">
                             ${r.status}
                         </span>
+                        <span class="text-[10px] text-slate-400">Auth: <b>${r.authResult}</b></span>
                     </td>
                     <td class="px-3 py-2.5 text-right">
                         ${r.status === 'Deposit Locked' 
-                            ? `<button onclick="openReturnModal(${index})" class="bg-solana-green hover:bg-emerald-400 text-slate-950 font-bold px-2.5 py-1 rounded-lg text-[10px] transition">Audit Pengembalian</button>`
+                            ? `<button onclick="openReturnModal(${index})" class="bg-solana-green hover:bg-emerald-400 text-slate-950 font-bold px-2.5 py-1.5 rounded-lg text-[10px] transition"><i class="fa-solid fa-shield-halved"></i> Verifikasi Fisik</button>`
                             : `<span class="text-slate-500 text-[10px]"><i class="fa-solid fa-check-double"></i> Verified</span>`
                         }
                     </td>
@@ -766,17 +793,40 @@
 
         function openReturnModal(index) {
             document.getElementById('auditTxIndex').value = index;
+            document.getElementById('auditAuthStatus').value = 'Authentic';
             document.getElementById('auditCondition').value = 'Good';
             document.getElementById('auditFineAmount').value = 0;
             document.getElementById('auditFineReason').value = '';
+            toggleAuthFailureFields();
             toggleFineInput();
             document.getElementById('modalReturn').classList.remove('hidden');
         }
 
+        function toggleAuthFailureFields() {
+            const authStat = document.getElementById('auditAuthStatus').value;
+            const warningBox = document.getElementById('authWarningBox');
+            const fineInput = document.getElementById('auditFineAmount');
+            const reasonInput = document.getElementById('auditFineReason');
+
+            if (authStat === 'Counterfeit') {
+                warningBox.classList.remove('hidden');
+                fineInput.value = 150000; // Automatic heavy penalty for fake/swapped items
+                reasonInput.value = 'Barang palsu / ditukar dengan imitasi';
+            } else {
+                warningBox.classList.add('hidden');
+                if (authStat === 'Authentic' && document.getElementById('auditCondition').value === 'Good') {
+                    fineInput.value = 0;
+                    reasonInput.value = '';
+                }
+            }
+        }
+
         function toggleFineInput() {
             const cond = document.getElementById('auditCondition').value;
+            const authStat = document.getElementById('auditAuthStatus').value;
             const group = document.getElementById('fineInputGroup');
-            if (cond === 'Good') {
+
+            if (cond === 'Good' && authStat === 'Authentic') {
                 group.classList.add('hidden');
             } else {
                 group.classList.remove('hidden');
@@ -786,27 +836,31 @@
         function submitReturnAudit() {
             const index = document.getElementById('auditTxIndex').value;
             const rental = rentals[index];
+            const authStat = document.getElementById('auditAuthStatus').value;
             const cond = document.getElementById('auditCondition').value;
             const fine = parseFloat(document.getElementById('auditFineAmount').value) || 0;
-            const reason = document.getElementById('auditFineReason').value || 'Denda Pengembalian';
+            const reason = document.getElementById('auditFineReason').value || 'Audit Pengembalian';
 
             rental.status = "Released & Verified";
+            rental.authResult = authStat === 'Authentic' ? 'Valid (Asli)' : 'Palsu / Ditukar';
             rental.fine = fine;
 
-            // Restock Items
-            rental.items.forEach(i => {
-                const prod = products.find(p => p.id === i.id);
-                if (prod) prod.stock += i.qty;
-            });
+            // Restock Items ONLY if authentic or not lost
+            if (authStat !== 'Counterfeit' && cond !== 'Lost') {
+                rental.items.forEach(i => {
+                    const prod = products.find(p => p.id === i.id);
+                    if (prod) prod.stock += i.qty;
+                });
+            }
 
-            // Record Fine to Ledger if applicable
+            // Record Fine or Penalty to Ledger if applicable
             if (fine > 0) {
                 const now = new Date();
                 ledger.push({
                     timestamp: now.toLocaleString('id-ID'),
                     rawDate: now,
                     type: "Pemasukan Denda",
-                    desc: `Denda Invoice #${rental.invoice} (${reason})`,
+                    desc: `Denda & Klaim Escrow Invoice #${rental.invoice} (${reason})`,
                     cashier: currentCashier,
                     amount: fine
                 });
@@ -818,7 +872,7 @@
             renderAuditTable();
             renderLedger();
 
-            Swal.fire('Audit Selesai', `Alat dikembalikan ke stok. Otorisasi deposit dirilis.${fine > 0 ? ` Denda Rp ${fine.toLocaleString('id-ID')} tercatat.` : ''}`, 'success');
+            Swal.fire('Verifikasi Selesai', `Audit keaslian fisik selesai. Status: ${rental.authResult}.${fine > 0 ? ` Denda Rp ${fine.toLocaleString('id-ID')} dicatat.` : ''}`, 'success');
         }
 
         // 6. Ledger & Multi-Period Financial Reports (Harian, Mingguan, Bulanan, Tahunan)
