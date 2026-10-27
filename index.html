@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<<<!DOCTYPE html>
 <html lang="id" class="dark">
 <head>
     <meta charset="UTF-8">
@@ -73,7 +73,7 @@
                 <div class="p-3 bg-solana-green/10 text-solana-green rounded-xl"><i class="fa-solid fa-lock text-xl"></i></div>
                 <div>
                     <p class="text-xs text-slate-400">Total Deposit Locked</p>
-                    <p id="statTotalDeposit" class="text-xl font-bold text-solana-green">0.25 SOL</p>
+                    <p id="statTotalDeposit" class="text-xl font-bold text-solana-green">Rp 0</p>
                 </div>
             </div>
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex items-center space-x-4">
@@ -162,12 +162,12 @@
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block font-medium text-slate-300 mb-1">Tarif Sewa (SOL / Hari)</label>
-                            <input type="number" step="0.01" id="itemRentFee" required placeholder="0.02" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-solana-purple">
+                            <label class="block font-medium text-slate-300 mb-1">Tarif Sewa (Rp / Hari)</label>
+                            <input type="number" id="itemRentFee" required placeholder="20000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-solana-purple">
                         </div>
                         <div>
-                            <label class="block font-medium text-slate-300 mb-1">Jaminan Deposit Escrow (SOL)</label>
-                            <input type="number" step="0.01" id="itemDeposit" required placeholder="0.08" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-solana-purple">
+                            <label class="block font-medium text-slate-300 mb-1">Jaminan Deposit Escrow (Rp)</label>
+                            <input type="number" id="itemDeposit" required placeholder="50000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-solana-purple">
                         </div>
                     </div>
                     <div>
@@ -194,9 +194,14 @@
         let currentWallet = null;
         let isSimulated = false;
 
+        // Fungsi Helper Format Rupiah (misal: 20000 -> Rp 20.000)
+        function formatRupiah(angka) {
+            return 'Rp ' + Number(angka).toLocaleString('id-ID');
+        }
+
         let items = [
-            { id: 1, name: "Tenda Dome 4 Orang", brand: "Consina / Eiger", rentFee: 0.05, deposit: 0.15, status: "Available" },
-            { id: 2, name: "Carrier 60L Pro", brand: "Deuter / Osprey", rentFee: 0.03, deposit: 0.10, status: "Available" }
+            { id: 1, name: "Tenda Dome 4 Orang", brand: "Consina / Eiger", rentFee: 35000, deposit: 100000, status: "Available" },
+            { id: 2, name: "Carrier 60L Pro", brand: "Deuter / Osprey", rentFee: 20000, deposit: 75000, status: "Available" }
         ];
 
         let transactions = [];
@@ -275,8 +280,8 @@
                             <h3 class="font-bold text-white text-base">${item.name}</h3>
                             <span class="bg-solana-purple/20 text-solana-purple border border-solana-purple/30 text-[10px] font-bold px-2 py-0.5 rounded-md">${item.brand}</span>
                         </div>
-                        <p class="text-xs text-slate-400">Tarif Sewa: <span class="text-white font-semibold">${item.rentFee} SOL / Hari</span></p>
-                        <p class="text-xs text-slate-400">Escrow Deposit: <span class="text-solana-green font-semibold">${item.deposit} SOL</span></p>
+                        <p class="text-xs text-slate-400">Tarif Sewa: <span class="text-white font-semibold">${formatRupiah(item.rentFee)} / Hari</span></p>
+                        <p class="text-xs text-slate-400">Escrow Deposit: <span class="text-solana-green font-semibold">${formatRupiah(item.deposit)}</span></p>
                     </div>
                     <div>
                         ${item.status === 'Available' 
@@ -316,7 +321,7 @@
 
             Swal.fire({
                 title: 'Escrow Lock Berhasil!',
-                html: `Barang <b>${item.name}</b> berhasil disewa.<br>Deposit <b>${item.deposit} SOL</b> terkunci di Smart Contract.<br><small class="text-slate-400">TX: ${txHash}</small>`,
+                html: `Barang <b>${item.name}</b> berhasil disewa.<br>Deposit <b>${formatRupiah(item.deposit)}</b> terkunci di Smart Contract.<br><small class="text-slate-400">TX: ${txHash}</small>`,
                 icon: 'success'
             });
         }
@@ -334,7 +339,7 @@
                     <td class="px-4 py-3 font-mono text-solana-purple">${shortAddress(tx.txHash)}</td>
                     <td class="px-4 py-3 font-semibold text-white">${tx.itemName}</td>
                     <td class="px-4 py-3 font-mono text-slate-400">${shortAddress(tx.renter)}</td>
-                    <td class="px-4 py-3 text-solana-green font-semibold">${tx.deposit} SOL</td>
+                    <td class="px-4 py-3 text-solana-green font-semibold">${formatRupiah(tx.deposit)}</td>
                     <td class="px-4 py-3">
                         <span class="${tx.status === 'Deposit Locked' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'} border px-2 py-0.5 rounded-full text-[10px]">
                             ${tx.status}
@@ -362,7 +367,7 @@
             renderHistory();
             updateStats();
 
-            Swal.fire('Audit Selesai', `Deposit ${tx.deposit} SOL telah dirilis kembali ke wallet penyewa!`, 'success');
+            Swal.fire('Audit Selesai', `Deposit ${formatRupiah(tx.deposit)} telah dirilis kembali ke wallet penyewa!`, 'success');
         }
 
         // 7. Add New Item (Admin)
@@ -391,8 +396,11 @@
         }
 
         function updateStats() {
-            const activeRents = transactions.filter(t => t.status === 'Deposit Locked').length;
-            document.getElementById('statActiveRents').innerText = activeRents;
+            const activeRents = transactions.filter(t => t.status === 'Deposit Locked');
+            const totalDepositLocked = activeRents.reduce((acc, curr) => acc + curr.deposit, 0);
+
+            document.getElementById('statActiveRents').innerText = activeRents.length;
+            document.getElementById('statTotalDeposit').innerText = formatRupiah(totalDepositLocked);
         }
 
         // Tab Switching
